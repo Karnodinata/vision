@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../services/dashboard_service.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
+import 'ph_history_screen.dart';
+import 'feeding_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -137,12 +139,23 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _bukaDetailPh(int idKolam) {
     debugPrint("Navigasi ke Analitik pH Historis untuk kolam $idKolam");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PhHistoryScreen(idKolam: idKolam),
+      ),
+    );
     // Navigator.push(context, MaterialPageRoute(builder: (context) => PhHistoryScreen(idKolam: idKolam)));
   }
 
   void _bukaDetailTelemetri(int idKolam) {
     debugPrint("Navigasi ke Log Kamera AI untuk kolam $idKolam");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => TelemetriHistoryScreen(idKolam: idKolam)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FeedingHistoryScreen(idKolam: idKolam),
+      ),
+    );
   }
 
   @override

@@ -40,6 +40,23 @@ class DashboardService {
     return response;
   }
 
+  Future<List<Map<String, dynamic>>> getRiwayatPakanLengkap(int idKolam) async {
+    final response = await _supabase
+        .from('sesi_pakan')
+        .select('''
+          *,
+          telemetri_feeder ( sisa_pakan_persen, putaran_stepper ),
+          log_visual_ai ( status_ikan, url_foto )
+        ''')
+        .eq('id_kolam', idKolam)
+        .order(
+          'waktu_mulai',
+          ascending: false,
+        ); // Urutkan dari yang paling baru
+
+    return response;
+  }
+
   Future<void> triggerPakanManual(int idKolam) async {
     await _supabase.from('sesi_pakan').insert({
       'id_kolam': idKolam,
