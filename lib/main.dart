@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// FAKTA: Import file layar lu di sini
 import 'screens/login_screen.dart';
-// import 'screens/dashboard_screen.dart'; // Nanti buka komen ini kalau layarnya udah dibuat
+import 'screens/dashboard_screen.dart'; // ← uncomment ini
 
 Future<void> main() async {
-  // Wajib dipanggil sebelum inisialisasi plugin native
   WidgetsFlutterBinding.ensureInitialized();
 
-  // URL valid hasil ekstraksi dari project reference Supabase lu
   await Supabase.initialize(
     url: 'https://keginmdkkgtvaxchtjug.supabase.co',
     anonKey:
@@ -19,7 +16,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-// Global instance untuk mengakses client Supabase secara efisien di memori
 final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
@@ -27,20 +23,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // GATEKEEPER LOGIC: Membaca status token JWT di lokal storage perangkat.
-    // Jika token masih valid dan belum expired, session tidak akan null.
     final session = supabase.auth.currentSession;
 
     return MaterialApp(
       title: 'V.I.S.I.O.N Awdy Farm',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      // ROUTING: Arahkan langsung ke dashboard jika session ada, jika kosong lempar ke LoginScreen
+      // Arahkan ke DashboardScreen jika session ada, LoginScreen jika tidak
       home: session != null
-          ? const Scaffold(
-              body: Center(
-                child: Text('Ini ceritanya halaman Dashboard V.I.S.I.O.N'),
-              ),
-            )
+          ? const DashboardScreen() // ← ganti placeholder dengan ini
           : const LoginScreen(),
     );
   }

@@ -18,6 +18,19 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoading = false;
   bool _isObscure = true;
 
+  // ── Light Theme Color Palette ──────────────────────────────────────────────
+  static const _bgPage      = Color(0xFFF4F7FA);
+  static const _bgCard      = Color(0xFFFFFFFF);
+  static const _bgInput     = Color(0xFFF8FAFB);
+  static const _accent      = Color(0xFF0891B2);
+  static const _accentDark  = Color(0xFF0E7490);
+  static const _accentLight = Color(0xFFE0F2FE);
+  static const _borderColor = Color(0xFFE2E8F0);
+  static const _borderFocus = Color(0xFF0891B2);
+  static const _textPrimary = Color(0xFF0F172A);
+  static const _textSecondary = Color(0xFF64748B);
+  static const _textMuted   = Color(0xFFCBD5E1);
+
   late AnimationController _fadeController;
   late AnimationController _scanController;
   late Animation<double> _fadeAnimation;
@@ -66,10 +79,12 @@ class _LoginScreenState extends State<LoginScreen>
         SnackBar(
           content: const Text(
             'Email/Username dan password tidak boleh kosong!',
+            style: TextStyle(color: Color(0xFF0F172A)),
           ),
-          backgroundColor: const Color(0xFF1A1A2E),
+          backgroundColor: const Color(0xFFFEF9C3),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -81,9 +96,7 @@ class _LoginScreenState extends State<LoginScreen>
       finalEmail = '$rawEmail@gmail.com';
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await _authService.login(finalEmail, password);
@@ -92,10 +105,14 @@ class _LoginScreenState extends State<LoginScreen>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Otentikasi berhasil. Mengakses sistem...'),
-          backgroundColor: const Color(0xFF00C9A7),
+          content: const Text(
+            'Otentikasi berhasil. Mengakses sistem...',
+            style: TextStyle(color: Color(0xFF0D3D33)),
+          ),
+          backgroundColor: const Color(0xFFD0F5EE),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -104,8 +121,6 @@ class _LoginScreenState extends State<LoginScreen>
         context,
         MaterialPageRoute(builder: (context) => const DashboardScreen()),
       );
-
-      // TODO: Navigator ke DashboardScreen
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -113,29 +128,26 @@ class _LoginScreenState extends State<LoginScreen>
           content: Text(e.toString()),
           backgroundColor: const Color(0xFFE63946),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(16),
         ),
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF080C14),
+      backgroundColor: _bgPage,
       body: Stack(
         children: [
-          // --- Background: Grid Pattern ---
+          // Grid background
           Positioned.fill(child: CustomPaint(painter: _GridPainter())),
 
-          // --- Background: Animated Scan Line ---
+          // Scan line (subtle, light-friendly)
           AnimatedBuilder(
             animation: _scanAnimation,
             builder: (context, _) {
@@ -150,9 +162,9 @@ class _LoginScreenState extends State<LoginScreen>
                     gradient: LinearGradient(
                       colors: [
                         Colors.transparent,
-                        Color(0x3000C9A7),
-                        Color(0x8800C9A7),
-                        Color(0x3000C9A7),
+                        Color(0x200891B2),
+                        Color(0x500891B2),
+                        Color(0x200891B2),
                         Colors.transparent,
                       ],
                     ),
@@ -162,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen>
             },
           ),
 
-          // --- Glow Orbs ---
+          // Glow orbs — light version
           Positioned(
             top: -100,
             right: -80,
@@ -173,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF00C9A7).withOpacity(0.08),
+                    _accent.withOpacity(0.07),
                     Colors.transparent,
                   ],
                 ),
@@ -190,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF0077B6).withOpacity(0.10),
+                    const Color(0xFF0077B6).withOpacity(0.06),
                     Colors.transparent,
                   ],
                 ),
@@ -198,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
 
-          // --- Main Content ---
+          // Main content
           SafeArea(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -209,15 +221,10 @@ class _LoginScreenState extends State<LoginScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Logo & Title
                       _buildHeader(),
                       const SizedBox(height: 48),
-
-                      // Form Card
                       _buildFormCard(),
                       const SizedBox(height: 16),
-
-                      // Footer
                       _buildFooter(),
                     ],
                   ),
@@ -230,26 +237,35 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ── Header ─────────────────────────────────────────────────────────────────
+
   Widget _buildHeader() {
     return Column(
       children: [
-        // Icon Badge
+        // Icon badge
         Container(
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF00C9A7), width: 1.5),
+            border: Border.all(color: _accent.withOpacity(0.35), width: 1.5),
             borderRadius: BorderRadius.circular(16),
-            color: const Color(0xFF00C9A7).withOpacity(0.08),
+            color: _accentLight,
+            boxShadow: [
+              BoxShadow(
+                color: _accent.withOpacity(0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          child: const Icon(Icons.water, color: Color(0xFF00C9A7), size: 36),
+          child: const Icon(Icons.water, color: _accent, size: 36),
         ),
         const SizedBox(height: 20),
 
         // Title
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [Color(0xFFE0F7FA), Color(0xFF00C9A7)],
+            colors: [Color(0xFF0E7490), Color(0xFF0891B2)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ).createShader(bounds),
@@ -259,21 +275,21 @@ class _LoginScreenState extends State<LoginScreen>
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w900,
-              color: Colors.white,
+              color: Colors.white, // dirender oleh ShaderMask
               letterSpacing: 10,
             ),
           ),
         ),
         const SizedBox(height: 8),
 
-        // Subtitle with decorative lines
+        // Subtitle
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 32,
               height: 1,
-              color: const Color(0xFF00C9A7).withOpacity(0.4),
+              color: _accent.withOpacity(0.35),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -281,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen>
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF7B8FA6),
+                color: _textSecondary,
                 letterSpacing: 1.5,
               ),
             ),
@@ -289,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen>
             Container(
               width: 32,
               height: 1,
-              color: const Color(0xFF00C9A7).withOpacity(0.4),
+              color: _accent.withOpacity(0.35),
             ),
           ],
         ),
@@ -297,20 +313,24 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ── Form Card ──────────────────────────────────────────────────────────────
+
   Widget _buildFormCard() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF00C9A7).withOpacity(0.18),
-          width: 1,
-        ),
-        color: const Color(0xFF0D1520),
+        border: Border.all(color: _borderColor),
+        color: _bgCard,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00C9A7).withOpacity(0.05),
-            blurRadius: 40,
-            spreadRadius: 0,
+            color: _accent.withOpacity(0.06),
+            blurRadius: 32,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -318,14 +338,14 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Card header label
+          // Card header
           Row(
             children: [
               Container(
                 width: 4,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00C9A7),
+                  color: _accent,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -334,7 +354,7 @@ class _LoginScreenState extends State<LoginScreen>
                 'OTORISASI AKSES',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Color(0xFF00C9A7),
+                  color: _accent,
                   letterSpacing: 2.5,
                   fontWeight: FontWeight.w600,
                 ),
@@ -363,43 +383,16 @@ class _LoginScreenState extends State<LoginScreen>
                 _isObscure
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
-                color: const Color(0xFF4A6070),
+                color: _textSecondary,
                 size: 20,
               ),
-              onPressed: () {
-                setState(() {
-                  _isObscure = !_isObscure;
-                });
-              },
+              onPressed: () => setState(() => _isObscure = !_isObscure),
             ),
           ),
           const SizedBox(height: 28),
 
           // Submit Button
-          _isLoading
-              ? Container(
-                  height: 54,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: const Color(0xFF00C9A7).withOpacity(0.3),
-                    ),
-                    color: const Color(0xFF00C9A7).withOpacity(0.05),
-                  ),
-                  child: const Center(
-                    child: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFF00C9A7),
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              : _buildSubmitButton(),
+          _isLoading ? _buildLoadingButton() : _buildSubmitButton(),
         ],
       ),
     );
@@ -418,38 +411,59 @@ class _LoginScreenState extends State<LoginScreen>
       obscureText: obscureText,
       keyboardType: keyboardType,
       style: const TextStyle(
-        color: Color(0xFFD0E8F2),
+        color: _textPrimary,
         fontSize: 15,
         letterSpacing: 0.3,
       ),
-      cursorColor: const Color(0xFF00C9A7),
+      cursorColor: _accent,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
-          color: Color(0xFF4A6070),
+          color: _textSecondary,
           fontSize: 13,
           letterSpacing: 0.5,
         ),
         floatingLabelStyle: const TextStyle(
-          color: Color(0xFF00C9A7),
+          color: _accent,
           fontSize: 12,
           letterSpacing: 0.5,
         ),
         filled: true,
-        fillColor: const Color(0xFF0A1118),
-        prefixIcon: Icon(icon, color: const Color(0xFF3A5A6A), size: 20),
+        fillColor: _bgInput,
+        prefixIcon: Icon(icon, color: _textSecondary, size: 20),
         suffixIcon: suffixIcon,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF1C2E3E), width: 1),
+          borderSide: const BorderSide(color: _borderColor, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00C9A7), width: 1.5),
+          borderSide: const BorderSide(color: _borderFocus, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingButton() {
+    return Container(
+      height: 54,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _accent.withOpacity(0.3)),
+        color: _accentLight,
+      ),
+      child: const Center(
+        child: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(_accent),
+          ),
         ),
       ),
     );
@@ -463,13 +477,13 @@ class _LoginScreenState extends State<LoginScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           gradient: const LinearGradient(
-            colors: [Color(0xFF00A896), Color(0xFF00C9A7)],
+            colors: [_accentDark, _accent],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00C9A7).withOpacity(0.25),
+              color: _accent.withOpacity(0.28),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -479,7 +493,7 @@ class _LoginScreenState extends State<LoginScreen>
           child: Text(
             'OTORISASI AKSES',
             style: TextStyle(
-              color: Color(0xFF080C14),
+              color: Colors.white,
               fontSize: 13,
               fontWeight: FontWeight.w800,
               letterSpacing: 2.5,
@@ -490,6 +504,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ── Footer ─────────────────────────────────────────────────────────────────
+
   Widget _buildFooter() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -498,7 +514,7 @@ class _LoginScreenState extends State<LoginScreen>
           width: 6,
           height: 6,
           decoration: const BoxDecoration(
-            color: Color(0xFF00C9A7),
+            color: _accent,
             shape: BoxShape.circle,
           ),
         ),
@@ -507,7 +523,7 @@ class _LoginScreenState extends State<LoginScreen>
           'SISTEM AKTIF  •  v1.0.0',
           style: TextStyle(
             fontSize: 10,
-            color: Color(0xFF2E4A5A),
+            color: _textSecondary,
             letterSpacing: 2,
           ),
         ),
@@ -516,7 +532,7 @@ class _LoginScreenState extends State<LoginScreen>
           width: 6,
           height: 6,
           decoration: const BoxDecoration(
-            color: Color(0xFF00C9A7),
+            color: _accent,
             shape: BoxShape.circle,
           ),
         ),
@@ -525,16 +541,15 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// Custom painter untuk grid background
+// Grid background painter — light theme version
 class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00C9A7).withOpacity(0.04)
+      ..color = const Color(0xFF0891B2).withOpacity(0.04)
       ..strokeWidth = 1;
 
     const spacing = 40.0;
-
     for (double x = 0; x < size.width; x += spacing) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }

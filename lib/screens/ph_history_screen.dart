@@ -19,6 +19,20 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  // ── Light Theme Color Palette ──────────────────────────────────────────────
+  static const _bgPage        = Color(0xFFF4F7FA);
+  static const _bgCard        = Color(0xFFFFFFFF);
+  static const _bgSubtle      = Color(0xFFF0F4F8);
+  static const _borderColor   = Color(0xFFE2E8F0);
+  static const _accent        = Color(0xFF0891B2);   // teal-600
+  static const _accentLight   = Color(0xFFE0F2FE);   // sky-100
+  static const _textPrimary   = Color(0xFF0F172A);   // slate-900
+  static const _textSecondary = Color(0xFF64748B);   // slate-500
+  static const _textMuted     = Color(0xFFCBD5E1);   // slate-300
+  static const _danger        = Color(0xFFDC2626);   // red-600
+  static const _warning       = Color(0xFFD97706);   // amber-600
+  static const _success       = Color(0xFF059669);   // emerald-600
+
   @override
   void initState() {
     super.initState();
@@ -52,18 +66,16 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
       if (ph < minPh) minPh = ph;
     }
 
-    final avgPh = sum / data.length;
-
-    return {'max': maxPh, 'min': minPh, 'avg': avgPh};
+    return {'max': maxPh, 'min': minPh, 'avg': sum / data.length};
   }
 
   List<FlSpot> _generateChartSpots(List<Map<String, dynamic>> data) {
     final reversedData = data.reversed.toList();
-
     return reversedData.asMap().entries.map((entry) {
-      final index = entry.key.toDouble();
-      final phValue = (entry.value['ph_level'] as num).toDouble();
-      return FlSpot(index, phValue);
+      return FlSpot(
+        entry.key.toDouble(),
+        (entry.value['ph_level'] as num).toDouble(),
+      );
     }).toList();
   }
 
@@ -78,9 +90,9 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
   }
 
   Color _getPhColor(double ph) {
-    if (ph < 6.5 || ph > 8.5) return const Color(0xFFE63946);
-    if (ph < 7.0 || ph > 8.0) return const Color(0xFFF4A261);
-    return const Color(0xFF00C9A7);
+    if (ph < 6.5 || ph > 8.5) return _danger;
+    if (ph < 7.0 || ph > 8.0) return _warning;
+    return _success;
   }
 
   String _getPhStatus(double ph) {
@@ -92,20 +104,22 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF080C14),
+      backgroundColor: _bgPage,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1520),
+        backgroundColor: _bgCard,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF1C2E3E)),
+              border: Border.all(color: _borderColor),
               borderRadius: BorderRadius.circular(8),
+              color: _bgSubtle,
             ),
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF00C9A7),
+              color: _accent,
               size: 14,
             ),
           ),
@@ -114,17 +128,17 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
         title: Row(
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF00C9A7), width: 1),
-                borderRadius: BorderRadius.circular(7),
-                color: const Color(0xFF00C9A7).withOpacity(0.08),
+                border: Border.all(color: _accent.withOpacity(0.3)),
+                borderRadius: BorderRadius.circular(8),
+                color: _accentLight,
               ),
               child: const Icon(
                 Icons.science_outlined,
-                color: Color(0xFF00C9A7),
-                size: 14,
+                color: _accent,
+                size: 16,
               ),
             ),
             const SizedBox(width: 10),
@@ -134,18 +148,18 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                 Text(
                   'ANALITIK HIDROLOGI',
                   style: TextStyle(
-                    color: Color(0xFF00C9A7),
+                    color: _accent,
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 2.5,
+                    letterSpacing: 2.0,
                   ),
                 ),
                 Text(
                   'Rekam jejak 24 jam terakhir',
                   style: TextStyle(
-                    color: Color(0xFF4A6070),
+                    color: _textSecondary,
                     fontSize: 10,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],
@@ -160,7 +174,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Color(0xFF00C9A7),
+                  _accent,
                   Colors.transparent,
                 ],
               ),
@@ -180,14 +194,14 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(
-                        color: Color(0xFF00C9A7),
+                        color: _accent,
                         strokeWidth: 2,
                       ),
                       SizedBox(height: 16),
                       Text(
                         'MEMUAT DATA HIDROLOGI...',
                         style: TextStyle(
-                          color: Color(0xFF3A5A6A),
+                          color: _textSecondary,
                           fontSize: 11,
                           letterSpacing: 2.5,
                         ),
@@ -205,21 +219,28 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF1C2E3E)),
+                          border: Border.all(color: _borderColor),
                           borderRadius: BorderRadius.circular(16),
-                          color: const Color(0xFF0D1520),
+                          color: _bgCard,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           Icons.science_outlined,
                           size: 40,
-                          color: Color(0xFF1C2E3E),
+                          color: _textMuted,
                         ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
                         'TIDAK ADA DATA',
                         style: TextStyle(
-                          color: Color(0xFF3A5A6A),
+                          color: _textSecondary,
                           fontSize: 12,
                           letterSpacing: 2.5,
                           fontWeight: FontWeight.bold,
@@ -229,7 +250,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                       const Text(
                         'Data hidrologi belum tersedia.',
                         style: TextStyle(
-                          color: Color(0xFF2A3E4E),
+                          color: _textMuted,
                           fontSize: 12,
                         ),
                       ),
@@ -239,13 +260,10 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
               }
 
               final rawData = snapshot.data!;
-
-              // Eksekusi fungsi logika
               final stats = _kalkulasiStatistik(rawData);
               final chartSpots = _generateChartSpots(rawData);
               final reversedDataForLabels = rawData.reversed.toList();
 
-              // Trigger animasi saat data masuk
               if (!_fadeController.isCompleted) _fadeController.forward();
 
               return FadeTransition(
@@ -255,19 +273,14 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── Stats Row ──
                       _buildStatsRow(stats),
-                      const SizedBox(height: 20),
-
-                      // ── Chart Card ──
+                      const SizedBox(height: 16),
                       _buildChartCard(
                         chartSpots: chartSpots,
                         reversedData: reversedDataForLabels,
                         stats: stats,
                       ),
-                      const SizedBox(height: 20),
-
-                      // ── Log Table ──
+                      const SizedBox(height: 16),
                       _buildLogTable(rawData),
                     ],
                   ),
@@ -326,16 +339,19 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        color: isHighlighted
-            ? color.withOpacity(0.08)
-            : const Color(0xFF0D1520),
+        color: isHighlighted ? color.withOpacity(0.06) : _bgCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighlighted
-              ? color.withOpacity(0.35)
-              : const Color(0xFF1C2E3E),
+          color: isHighlighted ? color.withOpacity(0.3) : _borderColor,
           width: isHighlighted ? 1.5 : 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,7 +363,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
               Text(
                 label,
                 style: TextStyle(
-                  color: color.withOpacity(0.7),
+                  color: color.withOpacity(0.8),
                   fontSize: 9,
                   letterSpacing: 1.5,
                   fontWeight: FontWeight.w600,
@@ -394,32 +410,35 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
     required List<Map<String, dynamic>> reversedData,
     required Map<String, double> stats,
   }) {
-    // Rentang Y untuk chart dengan padding
     final minY = (stats['min']! - 0.5).clamp(0.0, double.infinity);
     final maxY = stats['max']! + 0.5;
-
-    // Label waktu untuk sumbu X (ambil setiap N data agar tidak penuh)
     final totalPoints = reversedData.length;
     final labelStep = (totalPoints / 5).ceil().clamp(1, totalPoints);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1520),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1C2E3E)),
+        border: Border.all(color: _borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Container(
                 width: 3,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00C9A7),
+                  color: _accent,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -427,28 +446,27 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
               const Text(
                 'GRAFIK TREN pH',
                 style: TextStyle(
-                  color: Color(0xFF00C9A7),
+                  color: _accent,
                   fontSize: 11,
                   letterSpacing: 2,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const Spacer(),
-              // Safe zone indicator
               Row(
                 children: [
                   Container(
                     width: 20,
                     height: 2,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00C9A7).withOpacity(0.3),
+                      color: _accent.withOpacity(0.35),
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),
                   const SizedBox(width: 6),
                   const Text(
                     'Zona Aman',
-                    style: TextStyle(color: Color(0xFF3A5A6A), fontSize: 10),
+                    style: TextStyle(color: _textSecondary, fontSize: 10),
                   ),
                 ],
               ),
@@ -456,7 +474,6 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
           ),
           const SizedBox(height: 24),
 
-          // Chart
           SizedBox(
             height: 200,
             child: LineChart(
@@ -469,16 +486,15 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                   drawVerticalLine: false,
                   horizontalInterval: 0.5,
                   getDrawingHorizontalLine: (value) {
-                    // Garis batas zona aman
                     if (value == 6.5 || value == 8.5) {
                       return FlLine(
-                        color: const Color(0xFF00C9A7).withOpacity(0.25),
+                        color: _accent.withOpacity(0.3),
                         strokeWidth: 1,
                         dashArray: [4, 4],
                       );
                     }
-                    return FlLine(
-                      color: const Color(0xFF1C2E3E),
+                    return const FlLine(
+                      color: Color(0xFFE2E8F0),
                       strokeWidth: 1,
                     );
                   },
@@ -489,15 +505,13 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                       showTitles: true,
                       reservedSize: 36,
                       interval: 0.5,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Color(0xFF3A5A6A),
-                            fontSize: 10,
-                          ),
-                        );
-                      },
+                      getTitlesWidget: (value, meta) => Text(
+                        value.toStringAsFixed(1),
+                        style: const TextStyle(
+                          color: _textSecondary,
+                          fontSize: 10,
+                        ),
+                      ),
                     ),
                   ),
                   bottomTitles: AxisTitles(
@@ -515,7 +529,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                           child: Text(
                             _formatWaktu(reversedData[idx]['waktu_rekam']),
                             style: const TextStyle(
-                              color: Color(0xFF3A5A6A),
+                              color: _textSecondary,
                               fontSize: 9,
                             ),
                           ),
@@ -536,23 +550,19 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                     spots: chartSpots,
                     isCurved: true,
                     curveSmoothness: 0.35,
-                    color: const Color(0xFF00C9A7),
+                    color: _accent,
                     barWidth: 2.5,
                     dotData: FlDotData(
                       show: true,
-                      checkToShowDot: (spot, barData) {
-                        // Tampilkan dot merah untuk anomali
-                        final ph = spot.y;
-                        return ph < 6.5 || ph > 8.5;
-                      },
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 4,
-                          color: const Color(0xFFE63946),
-                          strokeWidth: 2,
-                          strokeColor: const Color(0xFF0D1520),
-                        );
-                      },
+                      checkToShowDot: (spot, barData) =>
+                          spot.y < 6.5 || spot.y > 8.5,
+                      getDotPainter: (spot, percent, barData, index) =>
+                          FlDotCirclePainter(
+                        radius: 4,
+                        color: _danger,
+                        strokeWidth: 2,
+                        strokeColor: _bgCard,
+                      ),
                     ),
                     belowBarData: BarAreaData(
                       show: true,
@@ -560,8 +570,8 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFF00C9A7).withOpacity(0.15),
-                          const Color(0xFF00C9A7).withOpacity(0.0),
+                          _accent.withOpacity(0.12),
+                          _accent.withOpacity(0.0),
                         ],
                       ),
                     ),
@@ -572,7 +582,6 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
           ),
 
           const SizedBox(height: 8),
-          // Legend anomali
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -580,14 +589,14 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                 width: 8,
                 height: 8,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFE63946),
+                  color: _danger,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 6),
               const Text(
                 'Titik anomali pH (< 6.5 atau > 8.5)',
-                style: TextStyle(color: Color(0xFF4A6070), fontSize: 10),
+                style: TextStyle(color: _textSecondary, fontSize: 10),
               ),
             ],
           ),
@@ -601,9 +610,16 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
   Widget _buildLogTable(List<Map<String, dynamic>> rawData) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1520),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1C2E3E)),
+        border: Border.all(color: _borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -616,7 +632,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                   width: 3,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00C9A7),
+                    color: _accent,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -624,7 +640,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                 const Text(
                   'LOG REKAM DATA',
                   style: TextStyle(
-                    color: Color(0xFF00C9A7),
+                    color: _accent,
                     fontSize: 11,
                     letterSpacing: 2,
                     fontWeight: FontWeight.w700,
@@ -637,14 +653,14 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0A1118),
+                    color: _bgSubtle,
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFF1C2E3E)),
+                    border: Border.all(color: _borderColor),
                   ),
                   child: Text(
                     '${rawData.length} rekaman',
                     style: const TextStyle(
-                      color: Color(0xFF4A6070),
+                      color: _textSecondary,
                       fontSize: 10,
                       letterSpacing: 0.5,
                     ),
@@ -657,7 +673,13 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
           // Column Labels
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: const Color(0xFF0A1118),
+            decoration: const BoxDecoration(
+              color: _bgSubtle,
+              border: Border(
+                top: BorderSide(color: _borderColor),
+                bottom: BorderSide(color: _borderColor),
+              ),
+            ),
             child: const Row(
               children: [
                 Expanded(
@@ -665,7 +687,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                   child: Text(
                     'WAKTU',
                     style: TextStyle(
-                      color: Color(0xFF3A5A6A),
+                      color: _textSecondary,
                       fontSize: 9,
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.bold,
@@ -678,7 +700,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                     'NILAI pH',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF3A5A6A),
+                      color: _textSecondary,
                       fontSize: 9,
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.bold,
@@ -691,7 +713,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                     'STATUS',
                     textAlign: TextAlign.end,
                     style: TextStyle(
-                      color: Color(0xFF3A5A6A),
+                      color: _textSecondary,
                       fontSize: 9,
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.bold,
@@ -708,7 +730,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
             physics: const NeverScrollableScrollPhysics(),
             itemCount: rawData.length,
             separatorBuilder: (_, __) =>
-                Container(height: 1, color: const Color(0xFF0F1D28)),
+                const Divider(height: 1, color: _borderColor),
             itemBuilder: (context, index) {
               final row = rawData[index];
               final ph = (row['ph_level'] as num).toDouble();
@@ -722,9 +744,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                   horizontal: 16,
                   vertical: 12,
                 ),
-                color: isFirst
-                    ? const Color(0xFF00C9A7).withOpacity(0.04)
-                    : Colors.transparent,
+                color: isFirst ? _accentLight.withOpacity(0.5) : Colors.transparent,
                 child: Row(
                   children: [
                     Expanded(
@@ -736,7 +756,7 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                               width: 6,
                               height: 6,
                               decoration: const BoxDecoration(
-                                color: Color(0xFF00C9A7),
+                                color: _accent,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -746,10 +766,11 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                           Text(
                             waktu,
                             style: TextStyle(
-                              color: isFirst
-                                  ? const Color(0xFFD0E8F2)
-                                  : const Color(0xFF7B8FA6),
+                              color: isFirst ? _textPrimary : _textSecondary,
                               fontSize: 12,
+                              fontWeight: isFirst
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                             ),
                           ),
                         ],
@@ -777,9 +798,10 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
+                            color: color.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(5),
-                            border: Border.all(color: color.withOpacity(0.3)),
+                            border:
+                                Border.all(color: color.withOpacity(0.25)),
                           ),
                           child: Text(
                             status,
@@ -805,12 +827,12 @@ class _PhHistoryScreenState extends State<PhHistoryScreen>
   }
 }
 
-// Grid background painter — konsisten dengan LoginScreen & DashboardScreen
+// Grid background painter — light theme version
 class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00C9A7).withOpacity(0.03)
+      ..color = const Color(0xFF0891B2).withOpacity(0.04)
       ..strokeWidth = 1;
 
     const spacing = 40.0;

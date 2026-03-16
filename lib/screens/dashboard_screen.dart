@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +23,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   Map<String, dynamic>? _kolamInfo;
   bool _isLoading = true;
   String _errorMessage = '';
-  bool _isFeedingManual = false;
+
+  // ── Feed Button State ──────────────────────────────────────────────────────
+  // True saat sedang mengirim komando ke ESP32
+  bool _isSendingCommand = false;
+  // True setelah komando terkirim, menunggu status_ikan == 'ikan kenyang'
+  bool _isWaitingForSatiated = false;
+  // Polling timer untuk cek status_ikan
+  Timer? _satiatedPollingTimer;
 
   late AnimationController _fadeController;
   late AnimationController _pulseController;
@@ -58,6 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void dispose() {
     _fadeController.dispose();
     _pulseController.dispose();
+    _satiatedPollingTimer?.cancel();
     super.dispose();
   }
 
@@ -70,6 +79,12 @@ class _DashboardScreenState extends State<DashboardScreen>
           _isLoading = false;
         });
         _fadeController.forward();
+
+        // Cek apakah ikan sudah kenyang saat app dibuka,
+        // agar tombol tidak terkunci jika sebelumnya app di-kill saat menunggu.
+        if (info != null) {
+          _checkCurrentSatiatedStatus(info['id_kolam'] as int);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -81,7 +96,60 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  /// Cek status_ikan saat ini — dipakai saat init & saat polling.
+  Future<void> _checkCurrentSatiatedStatus(int idKolam) async {
+    try {
+      final session = await _dashboardService.getSesiPakanTerakhir(idKolam);
+      if (session == null) return;
+
+      final List visualAi = session['log_visual_ai'] ?? [];
+      final statusIkan = visualAi.isNotEmpty
+          ? (visualAi.first['status_ikan'] as String? ?? '').toLowerCase()
+          : '';
+
+      if (statusIkan == 'ikan kenyang') {
+        _onIkanKenyang();
+      }
+    } catch (_) {
+      // Polling error diabaikan, coba lagi di iterasi berikutnya
+    }
+  }
+
+  /// Dipanggil saat status_ikan == 'ikan kenyang' terdeteksi.
+  void _onIkanKenyang() {
+    _satiatedPollingTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        _isWaitingForSatiated = false;
+        _isSendingCommand = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Ikan sudah kenyang — tombol pakan aktif kembali.',
+            style: TextStyle(color: Color(0xFF0D3D33)),
+          ),
+          backgroundColor: const Color(0xFFD0F5EE),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      );
+    }
+  }
+
+  /// Mulai polling setiap 15 detik untuk cek status_ikan.
+  void _startSatiatedPolling(int idKolam) {
+    _satiatedPollingTimer?.cancel();
+    _satiatedPollingTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => _checkCurrentSatiatedStatus(idKolam),
+    );
+  }
+
   void _handleLogout() async {
+    _satiatedPollingTimer?.cancel();
     await _authService.logout();
     if (!mounted) return;
     Navigator.pushReplacement(
@@ -91,18 +159,29 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _eksekusiPakanManual(int idKolam) async {
-    setState(() {
-      _isFeedingManual = true;
-    });
+    // Jangan proses jika sedang mengirim atau menunggu kenyang
+    if (_isSendingCommand || _isWaitingForSatiated) return;
+
+    setState(() => _isSendingCommand = true);
 
     try {
       await _dashboardService.triggerPakanManual(idKolam);
 
       if (!mounted) return;
+
+      // Komando berhasil → masuk mode "menunggu ikan kenyang"
+      setState(() {
+        _isSendingCommand = false;
+        _isWaitingForSatiated = true;
+      });
+
+      // Mulai polling status_ikan
+      _startSatiatedPolling(idKolam);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            'Komando terkirim! Menunggu respons aktuator ESP32...',
+            'Komando terkirim! Menunggu ikan kenyang...',
             style: TextStyle(color: Color(0xFF0D3D33)),
           ),
           backgroundColor: const Color(0xFFD0F5EE),
@@ -114,6 +193,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       );
     } catch (e) {
       if (!mounted) return;
+      setState(() => _isSendingCommand = false);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal mengirim komando: $e'),
@@ -123,12 +204,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           margin: const EdgeInsets.all(16),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isFeedingManual = false;
-        });
-      }
     }
   }
 
@@ -139,7 +214,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _bukaDetailPh(int idKolam) {
-    debugPrint("Navigasi ke Analitik pH Historis untuk kolam $idKolam");
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -149,7 +223,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _bukaDetailTelemetri(int idKolam) {
-    debugPrint("Navigasi ke Log Kamera AI untuk kolam $idKolam");
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -158,9 +231,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  // ── Derived button state ───────────────────────────────────────────────────
+  bool get _isButtonDisabled => _isSendingCommand || _isWaitingForSatiated;
+
+  String get _buttonLabel {
+    if (_isSendingCommand) return 'MENGIRIM KOMANDO...';
+    if (_isWaitingForSatiated) return 'MENUNGGU IKAN KENYANG...';
+    return 'BERI PAKAN MANUAL';
+  }
+
   @override
   Widget build(BuildContext context) {
-    // --- Loading State ---
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFF0F4F3),
@@ -187,7 +268,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       );
     }
 
-    // --- Error State ---
     if (_errorMessage.isNotEmpty) {
       return Scaffold(
         backgroundColor: const Color(0xFFF0F4F3),
@@ -238,7 +318,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       );
     }
 
-    // --- Empty State ---
     if (_kolamInfo == null) {
       return Scaffold(
         backgroundColor: const Color(0xFFF0F4F3),
@@ -291,10 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       appBar: _buildAppBar(namaKolam),
       body: Stack(
         children: [
-          // Grid background
           Positioned.fill(child: CustomPaint(painter: _GridPainter())),
-
-          // Content
           FadeTransition(
             opacity: _fadeAnimation,
             child: SingleChildScrollView(
@@ -302,7 +378,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Status Header
                   StreamBuilder<List<Map<String, dynamic>>>(
                     stream: _dashboardService.streamRiwayatPh(idKolam),
                     builder: (context, snapshot) {
@@ -329,6 +404,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
+
+  // ── AppBar ─────────────────────────────────────────────────────────────────
 
   PreferredSizeWidget _buildAppBar(String namaKolam) {
     return AppBar(
@@ -414,6 +491,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  // ── Status Header ──────────────────────────────────────────────────────────
+
   Widget _buildStatusHeader(bool isOnline) {
     final color = isOnline ? const Color(0xFF009E83) : const Color(0xFFE63946);
     final statusLabel = isOnline
@@ -429,7 +508,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       child: Row(
         children: [
-          // Pulsing dot
           AnimatedBuilder(
             animation: _pulseAnimation,
             builder: (context, _) {
@@ -484,6 +562,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  // ── pH Section ─────────────────────────────────────────────────────────────
+
   Widget _buildPhRealtimeSection(int idKolam) {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _dashboardService.streamRiwayatPh(idKolam),
@@ -519,11 +599,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           onTap: () => _bukaDetailPh(idKolam),
           child: Column(
             children: [
-              // pH Value + Status Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Big pH number
                   ShaderMask(
                     shaderCallback: (bounds) => LinearGradient(
                       colors: [phColor.withOpacity(0.75), phColor],
@@ -585,8 +663,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
               const SizedBox(height: 20),
-
-              // Chart
               SizedBox(
                 height: 130,
                 child: LineChart(
@@ -634,16 +710,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-              // Tap hint
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.touch_app_outlined,
                     size: 12,
-                    color: const Color(0xFF4A7A72),
+                    color: Color(0xFF4A7A72),
                   ),
                   const SizedBox(width: 4),
                   const Text(
@@ -663,6 +737,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  // ── Telemetry Section ──────────────────────────────────────────────────────
+
   Widget _buildTelemetrySection(int idKolam) {
     return FutureBuilder<Map<String, dynamic>?>(
       future: _dashboardService.getSesiPakanTerakhir(idKolam),
@@ -674,7 +750,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           return _buildCardWrapper(
             title: 'TELEMETRI FEEDER & AI',
             icon: Icons.router_outlined,
-            child: const _EmptyDataWidget(message: 'Belum ada log sesi pakan.'),
+            child: const _EmptyDataWidget(
+              message: 'Belum ada log sesi pakan.',
+            ),
           );
         }
 
@@ -687,9 +765,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         final statusIkan = visualAi.isNotEmpty
             ? visualAi.first['status_ikan']
             : 'Tidak ada data kamera';
-        final waktuFormatted = DateFormat(
-          'dd MMM yyyy, HH:mm',
-        ).format(DateTime.parse(session['waktu_mulai']).toLocal());
+        final waktuFormatted = DateFormat('dd MMM yyyy, HH:mm').format(
+          DateTime.parse(session['waktu_mulai']).toLocal(),
+        );
 
         double? sisaPakanNum;
         if (sisaPakan != '--') {
@@ -698,6 +776,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         final pakanColor = sisaPakanNum != null && sisaPakanNum < 20
             ? const Color(0xFFE63946)
             : const Color(0xFF009E83);
+
+        // Saat polling aktif: cek apakah status sudah kenyang dari data terbaru
+        final statusLower =
+            (statusIkan as String).toLowerCase();
+        if (_isWaitingForSatiated && statusLower == 'ikan kenyang') {
+          // Jadwalkan update di frame berikutnya agar tidak setState di build
+          WidgetsBinding.instance.addPostFrameCallback((_) => _onIkanKenyang());
+        }
 
         return _buildClickableCardWrapper(
           title: 'TELEMETRI FEEDER & AI',
@@ -721,16 +807,16 @@ class _DashboardScreenState extends State<DashboardScreen>
               _buildTelemetryRow(
                 icon: Icons.camera_alt_outlined,
                 label: 'Analisis Visual AI',
-                value: statusIkan.toString().toUpperCase(),
+                value: statusIkan.toUpperCase(),
               ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.touch_app_outlined,
                     size: 12,
-                    color: const Color(0xFF4A7A72),
+                    color: Color(0xFF4A7A72),
                   ),
                   const SizedBox(width: 4),
                   const Text(
@@ -749,6 +835,90 @@ class _DashboardScreenState extends State<DashboardScreen>
       },
     );
   }
+
+  // ── Manual Feed Button ─────────────────────────────────────────────────────
+
+  Widget _buildManualFeedButton(int idKolam) {
+    final isDisabled = _isButtonDisabled;
+
+    return GestureDetector(
+      onTap: isDisabled ? null : () => _eksekusiPakanManual(idKolam),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        height: 58,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: isDisabled
+                ? [const Color(0xFFE8F2F0), const Color(0xFFE8F2F0)]
+                : [const Color(0xFFE63946), const Color(0xFFD62828)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          border: Border.all(
+            color: isDisabled
+                ? const Color(0xFFD5E5E2)
+                : const Color(0xFFE63946).withOpacity(0.5),
+          ),
+          boxShadow: isDisabled
+              ? []
+              : [
+                  BoxShadow(
+                    color: const Color(0xFFE63946).withOpacity(0.28),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon / spinner
+              if (_isSendingCommand || _isWaitingForSatiated)
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: _isWaitingForSatiated
+                        ? const Color(0xFF009E83)
+                        : const Color(0xFF4A7A72),
+                    strokeWidth: 2,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.power_settings_new_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              const SizedBox(width: 12),
+              // Label
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  _buttonLabel,
+                  key: ValueKey(_buttonLabel),
+                  style: TextStyle(
+                    color: isDisabled
+                        ? (_isWaitingForSatiated
+                            ? const Color(0xFF009E83)
+                            : const Color(0xFF2E4F48))
+                        : Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.8,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   Widget _buildDivider() {
     return Container(
@@ -794,8 +964,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       ],
     );
   }
-
-  // --- Card Wrappers ---
 
   Widget _buildLoadingCard(String title) {
     return Container(
@@ -942,91 +1110,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       ],
     );
   }
-
-  // --- Manual Feed Button ---
-  Widget _buildManualFeedButton(int idKolam) {
-    return GestureDetector(
-      onTap: _isFeedingManual ? null : () => _eksekusiPakanManual(idKolam),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        height: 58,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: _isFeedingManual
-                ? [const Color(0xFFE8F2F0), const Color(0xFFE8F2F0)]
-                : [const Color(0xFFE63946), const Color(0xFFD62828)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          border: Border.all(
-            color: _isFeedingManual
-                ? const Color(0xFFD5E5E2)
-                : const Color(0xFFE63946).withOpacity(0.5),
-            width: 1,
-          ),
-          boxShadow: _isFeedingManual
-              ? []
-              : [
-                  BoxShadow(
-                    color: const Color(0xFFE63946).withOpacity(0.28),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-        ),
-        child: Center(
-          child: _isFeedingManual
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF4A7A72),
-                        strokeWidth: 2,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'MENGIRIM KOMANDO...',
-                      style: TextStyle(
-                        color: Color(0xFF2E4F48),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.power_settings_new_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'BERI PAKAN MANUAL',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
 }
 
-// --- Helper Widgets ---
+// ── Helper Widgets ─────────────────────────────────────────────────────────
 
 class _EmptyDataWidget extends StatelessWidget {
   final String message;

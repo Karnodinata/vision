@@ -18,6 +18,21 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  // ── Light Theme Color Palette ──────────────────────────────────────────────
+  static const _bgPage        = Color(0xFFF4F7FA);
+  static const _bgCard        = Color(0xFFFFFFFF);
+  static const _bgSubtle      = Color(0xFFF0F4F8);
+  static const _bgDark        = Color(0xFFE8EFF5);
+  static const _borderColor   = Color(0xFFE2E8F0);
+  static const _borderSubtle  = Color(0xFFEDF2F7);
+  static const _accent        = Color(0xFF0891B2);
+  static const _accentLight   = Color(0xFFE0F2FE);
+  static const _textPrimary   = Color(0xFF0F172A);
+  static const _textSecondary = Color(0xFF64748B);
+  static const _textMuted     = Color(0xFFCBD5E1);
+  static const _danger        = Color(0xFFDC2626);
+  static const _success       = Color(0xFF059669);
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +52,6 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
     super.dispose();
   }
 
-  // FAKTA KOMPUTASI: Pemformatan string ISO8601 ke waktu lokal manusia
   String _formatWaktu(String isoString) {
     final dateTime = DateTime.parse(isoString).toLocal();
     return DateFormat('dd MMM yyyy, HH:mm').format(dateTime);
@@ -56,20 +70,22 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF080C14),
+      backgroundColor: _bgPage,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1520),
+        backgroundColor: _bgCard,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF1C2E3E)),
+              border: Border.all(color: _borderColor),
               borderRadius: BorderRadius.circular(8),
+              color: _bgSubtle,
             ),
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF00C9A7),
+              color: _accent,
               size: 14,
             ),
           ),
@@ -78,17 +94,17 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
         title: Row(
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF00C9A7), width: 1),
-                borderRadius: BorderRadius.circular(7),
-                color: const Color(0xFF00C9A7).withOpacity(0.08),
+                border: Border.all(color: _accent.withOpacity(0.3)),
+                borderRadius: BorderRadius.circular(8),
+                color: _accentLight,
               ),
               child: const Icon(
                 Icons.restaurant_outlined,
-                color: Color(0xFF00C9A7),
-                size: 14,
+                color: _accent,
+                size: 16,
               ),
             ),
             const SizedBox(width: 10),
@@ -98,18 +114,18 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                 Text(
                   'RIWAYAT PAKAN & LOG AI',
                   style: TextStyle(
-                    color: Color(0xFF00C9A7),
+                    color: _accent,
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 2.5,
+                    letterSpacing: 2.0,
                   ),
                 ),
                 Text(
                   'Log sesi pemberian pakan',
                   style: TextStyle(
-                    color: Color(0xFF4A6070),
+                    color: _textSecondary,
                     fontSize: 10,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],
@@ -124,7 +140,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Color(0xFF00C9A7),
+                  _accent,
                   Colors.transparent,
                 ],
               ),
@@ -145,14 +161,14 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(
-                        color: Color(0xFF00C9A7),
+                        color: _accent,
                         strokeWidth: 2,
                       ),
                       SizedBox(height: 16),
                       Text(
                         'MEMUAT LOG SESI PAKAN...',
                         style: TextStyle(
-                          color: Color(0xFF3A5A6A),
+                          color: _textSecondary,
                           fontSize: 11,
                           letterSpacing: 2.5,
                         ),
@@ -174,22 +190,29 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: const Color(0xFFE63946).withOpacity(0.3),
+                              color: _danger.withOpacity(0.3),
                             ),
                             borderRadius: BorderRadius.circular(16),
-                            color: const Color(0xFFE63946).withOpacity(0.05),
+                            color: _danger.withOpacity(0.05),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: const Icon(
                             Icons.error_outline_rounded,
                             size: 40,
-                            color: Color(0xFFE63946),
+                            color: _danger,
                           ),
                         ),
                         const SizedBox(height: 16),
                         const Text(
                           'KESALAHAN KOMPUTASI',
                           style: TextStyle(
-                            color: Color(0xFFE63946),
+                            color: _danger,
                             fontSize: 12,
                             letterSpacing: 2.5,
                             fontWeight: FontWeight.bold,
@@ -200,7 +223,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                           '${snapshot.error}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: Color(0xFF4A6070),
+                            color: _textSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -219,21 +242,28 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF1C2E3E)),
+                          border: Border.all(color: _borderColor),
                           borderRadius: BorderRadius.circular(16),
-                          color: const Color(0xFF0D1520),
+                          color: _bgCard,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           Icons.restaurant_outlined,
                           size: 40,
-                          color: Color(0xFF1C2E3E),
+                          color: _textMuted,
                         ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
                         'BELUM ADA LOG SESI',
                         style: TextStyle(
-                          color: Color(0xFF3A5A6A),
+                          color: _textSecondary,
                           fontSize: 12,
                           letterSpacing: 2.5,
                           fontWeight: FontWeight.bold,
@@ -243,7 +273,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                       const Text(
                         'Riwayat pemberian pakan akan muncul di sini.',
                         style: TextStyle(
-                          color: Color(0xFF2A3E4E),
+                          color: _textMuted,
                           fontSize: 12,
                         ),
                       ),
@@ -263,11 +293,9 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                   itemBuilder: (context, index) {
                     final sesi = riwayatData[index];
 
-                    // LOGIKA PARSING JSON RELASIONAL
                     final List telemetri = sesi['telemetri_feeder'] ?? [];
                     final List visualAi = sesi['log_visual_ai'] ?? [];
 
-                    // Ekstraksi Variabel Faktual
                     final waktu = _formatWaktu(sesi['waktu_mulai']);
                     final tanggal = _formatTanggal(sesi['waktu_mulai']);
                     final jam = _formatJam(sesi['waktu_mulai']);
@@ -326,33 +354,29 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
     required String statusIkan,
     required String? urlFoto,
   }) {
-    final statusColor = isSuccess
-        ? const Color(0xFF00C9A7)
-        : const Color(0xFFE63946);
+    final statusColor = isSuccess ? _success : _danger;
     final pakanColor = sisaPakanNum != null && sisaPakanNum < 20
-        ? const Color(0xFFE63946)
-        : const Color(0xFF00C9A7);
+        ? _danger
+        : _success;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1520),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isFirst
-              ? const Color(0xFF00C9A7).withOpacity(0.3)
-              : const Color(0xFF1C2E3E),
+          color: isFirst ? _accent.withOpacity(0.3) : _borderColor,
           width: isFirst ? 1.5 : 1,
         ),
-        boxShadow: isFirst
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF00C9A7).withOpacity(0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: isFirst
+                ? _accent.withOpacity(0.08)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: isFirst ? 20 : 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -367,15 +391,15 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0A1118),
+                    color: _bgSubtle,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF1C2E3E)),
+                    border: Border.all(color: _borderColor),
                   ),
                   child: Center(
                     child: Text(
                       '#${(index + 1).toString().padLeft(2, '0')}',
                       style: const TextStyle(
-                        color: Color(0xFF3A5A6A),
+                        color: _textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -394,7 +418,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                           Text(
                             jam,
                             style: const TextStyle(
-                              color: Color(0xFFD0E8F2),
+                              color: _textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -408,20 +432,16 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFF00C9A7,
-                                ).withOpacity(0.12),
+                                color: _accentLight,
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: const Color(
-                                    0xFF00C9A7,
-                                  ).withOpacity(0.3),
+                                  color: _accent.withOpacity(0.3),
                                 ),
                               ),
                               child: const Text(
                                 'TERBARU',
                                 style: TextStyle(
-                                  color: Color(0xFF00C9A7),
+                                  color: _accent,
                                   fontSize: 8,
                                   letterSpacing: 1.5,
                                   fontWeight: FontWeight.bold,
@@ -435,7 +455,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                       Text(
                         tanggal,
                         style: const TextStyle(
-                          color: Color(0xFF4A6070),
+                          color: _textSecondary,
                           fontSize: 11,
                         ),
                       ),
@@ -450,9 +470,9 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: statusColor.withOpacity(0.3)),
+                    border: Border.all(color: statusColor.withOpacity(0.25)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -483,7 +503,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
           ),
 
           // Divider
-          Container(height: 1, color: const Color(0xFF0F1D28)),
+          Container(height: 1, color: _borderSubtle),
 
           // ── Metrics Row ──────────────────────────────
           Padding(
@@ -500,7 +520,11 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                   ),
                 ),
 
-                Container(width: 1, height: 36, color: const Color(0xFF1C2E3E)),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: _borderColor,
+                ),
 
                 // Kondisi Ikan
                 Expanded(
@@ -508,7 +532,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                     icon: Icons.camera_alt_outlined,
                     label: 'ANALISIS AI',
                     value: statusIkan.toUpperCase(),
-                    valueColor: const Color(0xFFD0E8F2),
+                    valueColor: _textPrimary,
                     alignRight: true,
                   ),
                 ),
@@ -518,7 +542,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
 
           // ── Foto AI (jika ada) ───────────────────────
           if (urlFoto != null) ...[
-            Container(height: 1, color: const Color(0xFF0F1D28)),
+            Container(height: 1, color: _borderSubtle),
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(16),
@@ -535,13 +559,13 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                       if (loadingProgress == null) return child;
                       return Container(
                         height: 160,
-                        color: const Color(0xFF0A1118),
+                        color: _bgSubtle,
                         child: const Center(
                           child: SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
-                              color: Color(0xFF00C9A7),
+                              color: _accent,
                               strokeWidth: 2,
                             ),
                           ),
@@ -550,21 +574,21 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                     },
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 80,
-                      color: const Color(0xFF0A1118),
+                      color: _bgSubtle,
                       child: const Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.broken_image_outlined,
-                              color: Color(0xFF2A3E4E),
+                              color: _textMuted,
                               size: 18,
                             ),
                             SizedBox(width: 8),
                             Text(
                               'Gambar tidak tersedia',
                               style: TextStyle(
-                                color: Color(0xFF2A3E4E),
+                                color: _textMuted,
                                 fontSize: 12,
                               ),
                             ),
@@ -583,24 +607,31 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF080C14).withOpacity(0.75),
+                        color: Colors.white.withOpacity(0.85),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: const Color(0xFF00C9A7).withOpacity(0.3),
+                          color: _accent.withOpacity(0.3),
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: const Row(
                         children: [
                           Icon(
                             Icons.videocam_outlined,
-                            color: Color(0xFF00C9A7),
+                            color: _accent,
                             size: 11,
                           ),
                           SizedBox(width: 4),
                           Text(
                             'KAMERA AI',
                             style: TextStyle(
-                              color: Color(0xFF00C9A7),
+                              color: _accent,
                               fontSize: 9,
                               letterSpacing: 1.5,
                               fontWeight: FontWeight.bold,
@@ -615,10 +646,11 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
             ),
           ] else ...[
             // No photo state
-            Container(height: 1, color: const Color(0xFF0F1D28)),
+            Container(height: 1, color: _borderSubtle),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: const BoxDecoration(
+                color: _bgSubtle,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
@@ -629,13 +661,13 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                 children: [
                   Icon(
                     Icons.no_photography_outlined,
-                    color: Color(0xFF2A3E4E),
+                    color: _textMuted,
                     size: 14,
                   ),
                   SizedBox(width: 6),
                   Text(
                     'Tidak ada rekaman kamera pada sesi ini',
-                    style: TextStyle(color: Color(0xFF2A3E4E), fontSize: 11),
+                    style: TextStyle(color: _textMuted, fontSize: 11),
                   ),
                 ],
               ),
@@ -669,13 +701,13 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
                 : MainAxisAlignment.start,
             children: [
               if (!alignRight) ...[
-                Icon(icon, color: const Color(0xFF3A5A6A), size: 12),
+                Icon(icon, color: _textSecondary, size: 12),
                 const SizedBox(width: 5),
               ],
               Text(
                 label,
                 style: const TextStyle(
-                  color: Color(0xFF3A5A6A),
+                  color: _textSecondary,
                   fontSize: 9,
                   letterSpacing: 1.5,
                   fontWeight: FontWeight.bold,
@@ -683,7 +715,7 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
               ),
               if (alignRight) ...[
                 const SizedBox(width: 5),
-                Icon(icon, color: const Color(0xFF3A5A6A), size: 12),
+                Icon(icon, color: _textSecondary, size: 12),
               ],
             ],
           ),
@@ -704,12 +736,12 @@ class _FeedingHistoryScreenState extends State<FeedingHistoryScreen>
   }
 }
 
-// Grid background painter — konsisten dengan seluruh screen VISION
+// Grid background painter — light theme version
 class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00C9A7).withOpacity(0.03)
+      ..color = const Color(0xFF0891B2).withOpacity(0.04)
       ..strokeWidth = 1;
 
     const spacing = 40.0;
