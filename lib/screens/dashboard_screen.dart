@@ -103,8 +103,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         SnackBar(
           content: const Text(
             'Komando terkirim! Menunggu respons aktuator ESP32...',
+            style: TextStyle(color: Color(0xFF0D3D33)),
           ),
-          backgroundColor: const Color(0xFF0D1520),
+          backgroundColor: const Color(0xFFD0F5EE),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(16),
@@ -145,7 +146,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         builder: (context) => PhHistoryScreen(idKolam: idKolam),
       ),
     );
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => PhHistoryScreen(idKolam: idKolam)));
   }
 
   void _bukaDetailTelemetri(int idKolam) {
@@ -163,20 +163,20 @@ class _DashboardScreenState extends State<DashboardScreen>
     // --- Loading State ---
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFF080C14),
+        backgroundColor: Color(0xFFF0F4F3),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                color: Color(0xFF00C9A7),
+                color: Color(0xFF009E83),
                 strokeWidth: 2,
               ),
               SizedBox(height: 20),
               Text(
                 'MENGINISIALISASI SISTEM...',
                 style: TextStyle(
-                  color: Color(0xFF3A5A6A),
+                  color: Color(0xFF4A7A72),
                   fontSize: 11,
                   letterSpacing: 3,
                 ),
@@ -190,7 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     // --- Error State ---
     if (_errorMessage.isNotEmpty) {
       return Scaffold(
-        backgroundColor: const Color(0xFF080C14),
+        backgroundColor: const Color(0xFFF0F4F3),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
@@ -204,7 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       color: const Color(0xFFE63946).withOpacity(0.3),
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    color: const Color(0xFFE63946).withOpacity(0.05),
+                    color: const Color(0xFFE63946).withOpacity(0.07),
                   ),
                   child: const Icon(
                     Icons.signal_wifi_connected_no_internet_4,
@@ -227,7 +227,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   _errorMessage,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Color(0xFF4A6070),
+                    color: Color(0xFF2E4F48),
                     fontSize: 13,
                   ),
                 ),
@@ -241,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     // --- Empty State ---
     if (_kolamInfo == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF080C14),
+        backgroundColor: const Color(0xFFF0F4F3),
         appBar: _buildAppBar('TIDAK ADA KOLAM'),
         body: Stack(
           children: [
@@ -253,13 +253,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Icon(
                     Icons.water_drop_outlined,
                     size: 56,
-                    color: Color(0xFF1C2E3E),
+                    color: Color(0xFFBDD8D3),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'TIDAK ADA DATA EMPANG',
                     style: TextStyle(
-                      color: Color(0xFF00C9A7),
+                      color: Color(0xFF009E83),
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2.5,
@@ -270,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     'Sistem tidak mendeteksi kolam yang terikat\ndengan identitas akun Anda saat ini.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF4A6070),
+                      color: Color(0xFF2E4F48),
                       fontSize: 13,
                       height: 1.6,
                     ),
@@ -287,7 +287,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     final namaKolam = _kolamInfo!['nama_kolam'] as String;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080C14),
+      backgroundColor: const Color(0xFFF0F4F3),
       appBar: _buildAppBar(namaKolam),
       body: Stack(
         children: [
@@ -332,7 +332,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   PreferredSizeWidget _buildAppBar(String namaKolam) {
     return AppBar(
-      backgroundColor: const Color(0xFF0D1520),
+      backgroundColor: Colors.white,
       elevation: 0,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
@@ -342,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             gradient: LinearGradient(
               colors: [
                 Colors.transparent,
-                Color(0xFF00C9A7),
+                Color(0xFF009E83),
                 Colors.transparent,
               ],
             ),
@@ -355,11 +355,11 @@ class _DashboardScreenState extends State<DashboardScreen>
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF00C9A7), width: 1),
+              border: Border.all(color: const Color(0xFF009E83), width: 1),
               borderRadius: BorderRadius.circular(8),
-              color: const Color(0xFF00C9A7).withOpacity(0.08),
+              color: const Color(0xFF009E83).withOpacity(0.10),
             ),
-            child: const Icon(Icons.water, color: Color(0xFF00C9A7), size: 16),
+            child: const Icon(Icons.water, color: Color(0xFF009E83), size: 16),
           ),
           const SizedBox(width: 12),
           Column(
@@ -367,12 +367,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFFE0F7FA), Color(0xFF00C9A7)],
+                  colors: [Color(0xFF006B58), Color(0xFF009E83)],
                 ).createShader(bounds),
                 child: const Text(
                   'V.I.S.I.O.N',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 4,
                     fontSize: 16,
@@ -382,7 +382,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               Text(
                 namaKolam.toUpperCase(),
                 style: const TextStyle(
-                  color: Color(0xFF4A6070),
+                  color: Color(0xFF4A7A72),
                   fontSize: 10,
                   letterSpacing: 1.5,
                 ),
@@ -398,12 +398,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF1C2E3E)),
+                border: Border.all(color: const Color(0xFFD5E5E2)),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 Icons.logout_rounded,
-                color: Color(0xFF4A6070),
+                color: Color(0xFF4A7A72),
                 size: 18,
               ),
             ),
@@ -415,7 +415,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildStatusHeader(bool isOnline) {
-    final color = isOnline ? const Color(0xFF00C9A7) : const Color(0xFFE63946);
+    final color = isOnline ? const Color(0xFF009E83) : const Color(0xFFE63946);
     final statusLabel = isOnline
         ? 'SISTEM KONTROL AKTIF & TERHUBUNG'
         : 'KONEKSI SENSOR TERPUTUS';
@@ -423,9 +423,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.07),
+        color: color.withOpacity(0.09),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withOpacity(0.30)),
       ),
       child: Row(
         children: [
@@ -441,7 +441,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(_pulseAnimation.value * 0.5),
+                      color: color.withOpacity(_pulseAnimation.value * 0.4),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -465,9 +465,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withOpacity(0.13),
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: color.withOpacity(0.3)),
+                border: Border.all(color: color.withOpacity(0.35)),
               ),
               child: Text(
                 'LIVE',
@@ -504,7 +504,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         final data = snapshot.data!;
         final latestPh = data.first['ph_level'] as num;
 
-        Color phColor = const Color(0xFF00C9A7);
+        Color phColor = const Color(0xFF009E83);
         String statusText = 'OPTIMAL';
         String statusDesc = 'Kadar pH dalam rentang ideal 6.5 – 8.5';
         if (latestPh < 6.5 || latestPh > 8.5) {
@@ -526,7 +526,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   // Big pH number
                   ShaderMask(
                     shaderCallback: (bounds) => LinearGradient(
-                      colors: [phColor.withOpacity(0.8), phColor],
+                      colors: [phColor.withOpacity(0.75), phColor],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ).createShader(bounds),
@@ -535,7 +535,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       style: const TextStyle(
                         fontSize: 72,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: Colors.black,
                         height: 1,
                       ),
                     ),
@@ -556,7 +556,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               color: phColor.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: phColor.withOpacity(0.3),
+                                color: phColor.withOpacity(0.35),
                               ),
                             ),
                             child: Text(
@@ -573,7 +573,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           Text(
                             statusDesc,
                             style: const TextStyle(
-                              color: Color(0xFF4A6070),
+                              color: Color(0xFF2E4F48),
                               fontSize: 11,
                               height: 1.4,
                             ),
@@ -596,7 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       drawVerticalLine: false,
                       horizontalInterval: 1,
                       getDrawingHorizontalLine: (_) => FlLine(
-                        color: const Color(0xFF1C2E3E),
+                        color: const Color(0xFFD5E5E2),
                         strokeWidth: 1,
                       ),
                     ),
@@ -643,13 +643,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Icon(
                     Icons.touch_app_outlined,
                     size: 12,
-                    color: const Color(0xFF3A5A6A),
+                    color: const Color(0xFF4A7A72),
                   ),
                   const SizedBox(width: 4),
                   const Text(
                     'Ketuk untuk melihat histori analitik',
                     style: TextStyle(
-                      color: Color(0xFF3A5A6A),
+                      color: Color(0xFF4A7A72),
                       fontSize: 11,
                       letterSpacing: 0.5,
                     ),
@@ -691,14 +691,13 @@ class _DashboardScreenState extends State<DashboardScreen>
           'dd MMM yyyy, HH:mm',
         ).format(DateTime.parse(session['waktu_mulai']).toLocal());
 
-        // Tentukan warna sisa pakan
         double? sisaPakanNum;
         if (sisaPakan != '--') {
           sisaPakanNum = (sisaPakan as num).toDouble();
         }
         final pakanColor = sisaPakanNum != null && sisaPakanNum < 20
             ? const Color(0xFFE63946)
-            : const Color(0xFF00C9A7);
+            : const Color(0xFF009E83);
 
         return _buildClickableCardWrapper(
           title: 'TELEMETRI FEEDER & AI',
@@ -731,13 +730,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Icon(
                     Icons.touch_app_outlined,
                     size: 12,
-                    color: const Color(0xFF3A5A6A),
+                    color: const Color(0xFF4A7A72),
                   ),
                   const SizedBox(width: 4),
                   const Text(
                     'Ketuk untuk melihat log kamera AI',
                     style: TextStyle(
-                      color: Color(0xFF3A5A6A),
+                      color: Color(0xFF4A7A72),
                       fontSize: 11,
                       letterSpacing: 0.5,
                     ),
@@ -755,7 +754,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 12),
       height: 1,
-      color: const Color(0xFF1C2E3E),
+      color: const Color(0xFFD5E5E2),
     );
   }
 
@@ -771,23 +770,23 @@ class _DashboardScreenState extends State<DashboardScreen>
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFF0A1118),
+            color: const Color(0xFFF5FAF9),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFF1C2E3E)),
+            border: Border.all(color: const Color(0xFFD5E5E2)),
           ),
-          child: Icon(icon, color: const Color(0xFF3A5A6A), size: 18),
+          child: Icon(icon, color: const Color(0xFF4A7A72), size: 18),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(color: Color(0xFF7B8FA6), fontSize: 13),
+            style: const TextStyle(color: Color(0xFF2E4F48), fontSize: 13),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: valueColor ?? Colors.white,
+            color: valueColor ?? const Color(0xFF0D1F1B),
             fontSize: 13,
             fontWeight: FontWeight.bold,
           ),
@@ -801,9 +800,16 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildLoadingCard(String title) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1520),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1C2E3E)),
+        border: Border.all(color: const Color(0xFFD5E5E2)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF009E83).withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -814,7 +820,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             height: 22,
             width: 22,
             child: CircularProgressIndicator(
-              color: Color(0xFF00C9A7),
+              color: Color(0xFF009E83),
               strokeWidth: 2,
             ),
           ),
@@ -830,9 +836,16 @@ class _DashboardScreenState extends State<DashboardScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1520),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1C2E3E)),
+        border: Border.all(color: const Color(0xFFD5E5E2)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF009E83).withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -857,13 +870,20 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        splashColor: const Color(0xFF00C9A7).withOpacity(0.08),
-        highlightColor: const Color(0xFF00C9A7).withOpacity(0.04),
+        splashColor: const Color(0xFF009E83).withOpacity(0.07),
+        highlightColor: const Color(0xFF009E83).withOpacity(0.04),
         child: Ink(
           decoration: BoxDecoration(
-            color: const Color(0xFF0D1520),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF1C2E3E)),
+            border: Border.all(color: const Color(0xFFD5E5E2)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF009E83).withOpacity(0.07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -877,13 +897,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0A1118),
+                      color: const Color(0xFFF5FAF9),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF1C2E3E)),
+                      border: Border.all(color: const Color(0xFFD5E5E2)),
                     ),
                     child: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: Color(0xFF3A5A6A),
+                      color: Color(0xFF4A7A72),
                       size: 12,
                     ),
                   ),
@@ -905,7 +925,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           width: 3,
           height: 16,
           decoration: BoxDecoration(
-            color: const Color(0xFF00C9A7),
+            color: const Color(0xFF009E83),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -913,7 +933,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         Text(
           title,
           style: const TextStyle(
-            color: Color(0xFF00C9A7),
+            color: Color(0xFF009E83),
             fontSize: 11,
             letterSpacing: 2,
             fontWeight: FontWeight.w700,
@@ -934,14 +954,14 @@ class _DashboardScreenState extends State<DashboardScreen>
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
             colors: _isFeedingManual
-                ? [const Color(0xFF1C2E3E), const Color(0xFF1C2E3E)]
+                ? [const Color(0xFFE8F2F0), const Color(0xFFE8F2F0)]
                 : [const Color(0xFFE63946), const Color(0xFFD62828)],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           border: Border.all(
             color: _isFeedingManual
-                ? const Color(0xFF2A3E4E)
+                ? const Color(0xFFD5E5E2)
                 : const Color(0xFFE63946).withOpacity(0.5),
             width: 1,
           ),
@@ -949,7 +969,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ? []
               : [
                   BoxShadow(
-                    color: const Color(0xFFE63946).withOpacity(0.3),
+                    color: const Color(0xFFE63946).withOpacity(0.28),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
@@ -964,7 +984,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                        color: Color(0xFF4A6070),
+                        color: Color(0xFF4A7A72),
                         strokeWidth: 2,
                       ),
                     ),
@@ -972,7 +992,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Text(
                       'MENGIRIM KOMANDO...',
                       style: TextStyle(
-                        color: Color(0xFF4A6070),
+                        color: Color(0xFF2E4F48),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,
@@ -1018,11 +1038,11 @@ class _EmptyDataWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.inbox_outlined, color: Color(0xFF2A3E4E), size: 18),
+          const Icon(Icons.inbox_outlined, color: Color(0xFF4A7A72), size: 18),
           const SizedBox(width: 10),
           Text(
             message,
-            style: const TextStyle(color: Color(0xFF3A5A6A), fontSize: 13),
+            style: const TextStyle(color: Color(0xFF2E4F48), fontSize: 13),
           ),
         ],
       ),
@@ -1030,12 +1050,12 @@ class _EmptyDataWidget extends StatelessWidget {
   }
 }
 
-// Grid background painter — sama seperti LoginScreen
+// Grid background painter — light mode
 class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00C9A7).withOpacity(0.03)
+      ..color = const Color(0xFF009E83).withOpacity(0.05)
       ..strokeWidth = 1;
 
     const spacing = 40.0;
