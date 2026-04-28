@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Kontrol V.I.S.I.O.N</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        text-align: center;
+        color: #333;
+      }
+      .card {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .data-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1565c0;
+      }
+
+      /* Gaya khusus tombol Kontrol Manual */
+      .kontrol-manual-container {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #fff3e0;
+        border-radius: 8px;
+        border: 1px solid #ffe0b2;
+      }
+      .btn-manual {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: 0.3s;
+        color: white;
+      }
+      .btn-off {
+        background-color: #007bff;
+      }
+      .btn-off:hover {
+        background-color: #0056b3;
+      }
+      .btn-on {
+        background-color: #dc3545;
+      }
+      .btn-on:hover {
+        background-color: #c82333;
+      }
+      /* Tambahan gaya untuk tombol override */
+      .btn-override {
+        background-color: #ff9800;
+        margin-top: 10px;
+      }
+      .btn-override:hover {
+        background-color: #e68a00;
+      }
+
+      .form-group {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+      input[type="number"] {
+        width: 45%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .btn-tambah {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 4px;
+        width: 100%;
+        font-size: 16px;
+      }
+      .btn-tambah:hover {
+        background-color: #218838;
+      }
+      .btn-hapus {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        width: auto;
+        font-size: 12px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .btn-hapus:hover {
+        background-color: #c82333;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        background: #f8f9fa;
+        margin-bottom: 5px;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Panel Kontrol V.I.S.I.O.N</h2>
+
+      <div class="card">
+        <p>Sisa Pakan Saat Ini</p>
+        <div class="data-value" id="sisaPakan">Memuat...</div>
+      </div>
+
+      <div class="card">
+        <p>Tingkat pH Air</p>
+        <div class="data-value" id="tingkatPH">Memuat...</div>
+        <p
+          style="margin: 5px 0 0 0; font-size: 14px; color: #555"
+          id="kualitasAir"
+        >
+          -
+        </p>
+      </div>
+
+      <div class="kontrol-manual-container">
+        <h3 style="margin-top: 0">Kontrol Manual & Override</h3>
+
+        <button
+          id="btnManual"
+          class="btn-manual btn-off"
+          onclick="toggleManual()"
+        >
+          Memuat Tombol...
+        </button>
+
+        <button
+          id="btnStopOtomatis"
+          class="btn-manual btn-override"
+          style="display: none"
+          onclick="hentikanPaksa()"
+        >
+          🛑 Hentikan Pakan (Override Penjadwalan)
+        </button>
+      </div>
+
+      <h3>Tambah Jadwal Baru (Format 24 Jam)</h3>
+      <div class="form-group">
+        <input
+          type="number"
+          id="inputJam"
+          placeholder="Jam (0-23)"
+          min="0"
+          max="23"
+        />
+        <input
+          type="number"
+          id="inputMenit"
+          placeholder="Menit (0-59)"
+          min="0"
+          max="59"
+        />
+      </div>
+      <button class="btn-tambah" onclick="tambahJadwal()">
+        + Simpan Jadwal
+      </button>
+
+      <h3>Daftar Jadwal Pakan</h3>
+      <ul id="listJadwal">
+        <li>Memuat jadwal...</li>
+      </ul>
+    </div>
+
+    <script>
+      let servoMenyala = false;
+
+      function ambilDataStatus() {
+        fetch("/api/status")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("sisaPakan").innerText =
+              data.persen_sisa_pakan + " %";
+            document.getElementById("tingkatPH").innerText = data.tingkat_ph;
+            document.getElementById("kualitasAir").innerText =
+              "Status: " + data.kualitas_air;
+
+            // --- LOGIKA PERUBAHAN WARNA TOMBOL MANUAL & OVERRIDE ---
+            servoMenyala = data.status_servo_aktif;
+            let btn = document.getElementById("btnManual");
+            let btnStop = document.getElementById("btnStopOtomatis");
+
+            if (servoMenyala) {
+              btn.innerText = "🐟 Status: Sedang Beri Pakan";
+              btn.className = "btn-manual btn-off";
+              btn.disabled = true; // Nonaktifkan tombol utama agar tidak bingung
+              btn.style.opacity = "0.6";
+
+              // Tampilkan tombol override oranye
+              btnStop.style.display = "block";
+            } else {
+              btn.innerText = "🐟 Beri Pakan Sekarang";
+              btn.className = "btn-manual btn-off";
+              btn.disabled = false;
+              btn.style.opacity = "1";
+
+              // Sembunyikan tombol override
+              btnStop.style.display = "none";
+            }
+            // ---------------------------------------------
+
+            const listJadwal = document.getElementById("listJadwal");
+            listJadwal.innerHTML = "";
+            if (data.daftar_jadwal.length === 0) {
+              listJadwal.innerHTML = "<li>Belum ada jadwal.</li>";
+            } else {
+              data.daftar_jadwal.forEach((jadwal) => {
+                let jamFormat = jadwal.jam < 10 ? "0" + jadwal.jam : jadwal.jam;
+                let menitFormat =
+                  jadwal.menit < 10 ? "0" + jadwal.menit : jadwal.menit;
+                let li = document.createElement("li");
+                li.innerHTML = `<span>Pukul ${jamFormat}:${menitFormat} WIB</span> 
+                                <button class="btn-hapus" onclick="hapusJadwal(${jadwal.id})">Hapus</button>`;
+                listJadwal.appendChild(li);
+              });
+            }
+          })
+          .catch((err) => console.error("Error fetching data:", err));
+      }
+
+      function toggleManual() {
+        fetch("/api/kontrol", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ aksi: "feed" }),
+        }).then((response) => {
+          ambilDataStatus();
+        });
+      }
+
+      // --- FITUR BARU: Fungsi Hentikan Paksa (Override) ---
+      function hentikanPaksa() {
+        fetch("/api/kontrol", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ aksi: "stop" }),
+        }).then((response) => {
+          ambilDataStatus();
+        });
+      }
+
+      function tambahJadwal() {
+        let jam = document.getElementById("inputJam").value;
+        let menit = document.getElementById("inputMenit").value;
+
+        if (jam === "" || menit === "") {
+          alert("Harap isi jam dan menit terlebih dahulu!");
+          return;
+        }
+
+        fetch("/api/jadwal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jam: parseInt(jam), menit: parseInt(menit) }),
+        })
+          .then((response) =>
+            response
+              .json()
+              .then((data) => ({ status: response.status, body: data })),
+          )
+          .then((res) => {
+            if (res.status === 400) {
+              alert("Gagal: " + res.body.error);
+            } else {
+              document.getElementById("inputJam").value = "";
+              document.getElementById("inputMenit").value = "";
+              ambilDataStatus();
+            }
+          });
+      }
+
+      function hapusJadwal(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus jadwal ini?")) {
+          fetch(`/api/jadwal?id=${id}`, { method: "DELETE" }).then(
+            (response) => {
+              ambilDataStatus();
+            },
+          );
+        }
+      }
+
+      ambilDataStatus();
+      setInterval(ambilDataStatus, 2000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+Flask
+flask-cors
+paho-mqtt
+apscheduler
+supabase
+inference-sdk
